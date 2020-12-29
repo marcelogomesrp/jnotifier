@@ -1,0 +1,52 @@
+{
+	"cron": "* * * * *",
+	"jobs": [
+		{
+			"jobname": "novaSeq",
+			"src": "/data/platform/novaseq",
+			"rules": [
+				{
+					"name": "genoma",
+					"jenkinsjob": "jkA",
+					"files": [
+						{
+							"filename": "CopyCompleted"
+						},
+						{
+							"filename": "SampleSheet.csv",
+							"fileContent": "Description:genoma"
+						}
+					]
+				},
+				{
+					"name": "exoma",
+					"jenkinsjob": "jkB",
+					"files": [
+						{
+							"filename": "CopyCompleted"
+						},
+						{
+							"filename": "SampleSheet.csv",
+							"fileContent": "Description:exoma"
+						}
+					]
+				}
+			]
+		},
+		{
+			"jobname":"nextseq",
+			"src": "/data/platform/nextseq",
+			"rules":[
+				{
+					"name": "nextseq",
+					"jenkinsjob": "jkC",
+					"files": [
+						{
+							"filename":"CopyCompleted"
+						}
+					]
+				}
+			]
+		}
+	]
+}
