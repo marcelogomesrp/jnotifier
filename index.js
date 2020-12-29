@@ -84,6 +84,14 @@ function isRuleCandidate(rule, file) {
 function callJenkins(run) {
     console.log(`Call Jenkins to run ${run}`);
 }
+    //    var jenkins = jenkinsapi.init('http://user:hash@localhost:8080');
+    //
+    //    jenkins.build('tst1', function(err, data) {
+    //        if (err){ return console.log(`Ops: Error \n ${err}`); }
+    //        console.log(`It's ok ${data}`);
+    //      });
+    //
+    //curl -X POST http://localhost:8080/job/tst1/build --user user:hash;
 
 
 function runAsDaemon() {
