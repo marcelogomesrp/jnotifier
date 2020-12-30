@@ -37,7 +37,7 @@
 			]
 		},
 		{
-			"jobname":"nextseq",
+			"sourcename":"nextseq",
 			"src": "/data/platform/nextseq",
 			"rules":[
 				{

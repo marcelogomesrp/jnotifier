@@ -1,6 +1,5 @@
 #!/usr/bin/env node
 
-
 const cron = require('node-cron');
 const fs = require('fs');
 const path = require('path');
@@ -13,21 +12,14 @@ function main() {
     console.log("***********************************");
     conf.sources.forEach(source => {
         //console.log(`Job: ${JSON.stringify(job)}`);
-        console.log(`JobName: ${source.sourcename} with ${source.rules.length} rules`);
+        console.log(`Source: ${source.sourcename} with ${source.rules.length} rules`);
         const runs = getAllRuns(source.src);
-        console.log(`Runs ret:::: ${runs}`);
         source.rules.forEach(rule => {
             runs.forEach(run => {
                 if (isRunCandidate(rule, source.src, run)) {
-                    console.log(`\truninng rule: ${rule.name} is ok to ${run}`);
-                    rule.files.forEach(file => {
-                        console.log(`\t\tIn RUN ${run} to check: ${file.filename}`);
-                        console.log(`\t\tIn RUN ${run} file content: ${file.fileContent}`);
-                        console.log(" ");
-                    });
+                    console.log(`---> Call jenkins in rule ${rule.name} for run: ${run}`);
                 }
-            });
-            //console.log(`\tFile skip: ${rule.fileSkip}`);
+            });            
         })
 
     })
@@ -39,11 +31,11 @@ function main() {
 
 function getAllRuns(src) {
     let runs = [];
-    console.log(`********* ${src}`);
+    console.log(`Runs found in ${src}`);
     try {
         fs.readdirSync(src).forEach(file => {
             if (fs.lstatSync(path.resolve(src, file)).isDirectory()) {
-                console.log(`file.... ${file}`);
+                console.log(`\tRun... ${file}`);
                 runs.push(file);
             }
         });
@@ -68,29 +60,41 @@ function getAllValidRuns(src) {
 
 
 //TODO: colocar toda a validação aqui, incluindo a questão de olhar os arquivos que devem existir (exemplo copyCompleted)
-
+/*
 function isRunCandidate(rule) {
     if (rule.fileSkip) {
         return fs.existsSync(rule.fileSkip);
     }
     return false;
 }
+*/
 
 function isRunCandidate(rule, source, run) {
     //console.log(`running isRunCandidate fileskip: ${rule.fileSkip}  src: ${source} run: ${run}`);
+    let isRunCandidate = true;
     if (rule.fileSkip) {
         const fullPath = path.join(source, run, rule.fileSkip);
-        console.log(`....yes ${fullPath}`);
+        //console.log(`....yes ${fullPath}`);
         let fileSkipExist = fs.existsSync(fullPath);
         if (fileSkipExist) {
-            return false;
+            isRunCandidate=false;
         } else {
             rule.files.forEach(file => {
-                console.log(`Olhando o file ${file.filename}`);
-                if (!fs.existsSync(path.join(source, run, file.filename))) {
+                //console.log(`Olhando o arquivo ${file.filename} existe`);
+                if (!fs.existsSync(path.join(source, run, file.filename))) {                    
+                    isRunCandidate=false;
                     return false;
                 }
+                
                 if (file.fileContent) {
+                    const fileContent = fileread(path.join(source, run, file.filename));
+                    //console.log(`xxxx Comparando... \n--\n${fileContent}\n--\nem busca de ${file.fileContent}`);
+                    if (!fileContent.includes(file.fileContent)) {                        
+                        isRunCandidate=false;
+                        return false;
+                    }
+
+                    /*
                     fs.readFile(path.join(source, run, file.filename), function (err, data) {
                         if (err) throw err;
                         if (data.includes(file.fileContent)) {
@@ -99,11 +103,12 @@ function isRunCandidate(rule, source, run) {
                             return false;
                         }
                     });
+                    */
                 }
 
             });
-            console.log(`oooooooooooooooooooooooooooo ${fullPath}`);
-            return true;
+            //console.log(`oooooooooooooooooooooooooooo ${fullPath}`);
+            return isRunCandidate;
         }
 
     }
@@ -137,6 +142,13 @@ function runAsDaemon() {
 
     task.start();
 }
+
+function fileread(filename) {
+    var contents = fs.readFileSync(filename);
+    return contents.toString();
+}
+
+
 
 main();
 //runAsDaemon();
